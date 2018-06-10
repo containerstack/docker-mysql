@@ -1,9 +1,14 @@
 FROM containerstack/debian:stretch-slim
 
+MAINTAINER Remon Lam [remon@containerstack.io]
+
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r mysql && useradd -r -g mysql mysql
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg dirmngr && rm -rf /var/lib/apt/lists/*
+
+ENV MYSQL_MAJOR 5.6
+ENV MYSQL_VERSION 5.6.40-1debian9
 
 # add gosu for easy step-down from root
 ENV GOSU_VERSION 1.7
@@ -19,13 +24,11 @@ RUN set -x \
 	&& gosu nobody true \
 	&& apt-get purge -y --auto-remove ca-certificates wget
 
-RUN mkdir /docker-entrypoint-initdb.d
+RUN mkdir /entrypoint-initdb.d
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 # for MYSQL_RANDOM_ROOT_PASSWORD
 		pwgen \
-# for mysql_ssl_rsa_setup
-		openssl \
 # FATAL ERROR: please install the following Perl modules before executing /usr/local/mysql/scripts/mysql_install_db:
 # File::Basename
 # File::Copy
@@ -38,21 +41,10 @@ RUN set -ex; \
 # gpg: key 5072E1F5: public key "MySQL Release Engineering <mysql-build@oss.oracle.com>" imported
 	key='A4A9406876FCBD3C456770C88C718D3B5072E1F5'; \
 	export GNUPGHOME="$(mktemp -d)"; \
-#	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
-	for keyserver in $(shuf -e \
-									ha.pool.sks-keyservers.net \
-									hkp://p80.pool.sks-keyservers.net:80 \
-									keyserver.ubuntu.com \
-									hkp://keyserver.ubuntu.com:80 \
-									pgp.mit.edu) ; do \
-					gpg --keyserver $keyserver --recv-keys "$key" && break || true ; \
-	done && \
+	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
 	gpg --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg; \
 	rm -rf "$GNUPGHOME"; \
 	apt-key list > /dev/null
-
-ENV MYSQL_MAJOR 5.7
-ENV MYSQL_VERSION 5.7.22-1debian9
 
 RUN echo "deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
 
@@ -78,9 +70,9 @@ RUN { \
 
 VOLUME /var/lib/mysql
 
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
-ENTRYPOINT ["docker-entrypoint.sh"]
+COPY entrypoint.sh /usr/local/bin/
+RUN ln -s usr/local/bin/entrypoint.sh /entrypoint.sh # backwards compat
+ENTRYPOINT ["entrypoint.sh"]
 
 EXPOSE 3306
 CMD ["mysqld"]
