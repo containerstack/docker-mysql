@@ -1,5 +1,4 @@
 FROM containerstack/debian:stretch-slim
-
 MAINTAINER Remon Lam [remon@containerstack.io]
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
