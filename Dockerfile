@@ -1,10 +1,13 @@
-FROM containerstack/debian:jessie
+FROM containerstack/debian:stretch-slim
 MAINTAINER Remon Lam [remon@containerstack.io]
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r mysql && useradd -r -g mysql mysql
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg dirmngr && rm -rf /var/lib/apt/lists/*
+
+ENV MYSQL_MAJOR 5.6
+ENV MYSQL_VERSION 5.6.40-1debian9
 
 # add gosu for easy step-down from root
 ENV GOSU_VERSION 1.7
@@ -41,9 +44,6 @@ RUN set -ex; \
 	gpg --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg; \
 	rm -rf "$GNUPGHOME"; \
 	apt-key list > /dev/null
-
-ENV MYSQL_MAJOR 5.6
-ENV MYSQL_VERSION 5.6.40-1debian9
 
 RUN echo "deb http://repo.mysql.com/apt/debian/ stretch mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
 
