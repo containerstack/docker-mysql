@@ -7,8 +7,8 @@ RUN groupadd -r mysql && useradd -r -g mysql mysql
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg dirmngr && rm -rf /var/lib/apt/lists/*
 
-ENV MYSQL_MAJOR 5.6
-ENV MYSQL_VERSION 5.6.40-1debian9
+ENV MYSQL_MAJOR 5.7
+ENV MYSQL_VERSION 5.7.22-1debian9
 
 # add gosu for easy step-down from root
 ENV GOSU_VERSION 1.7
