@@ -73,6 +73,10 @@ RUN { \
 # don't reverse lookup hostnames, they are usually another container
 	&& echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
 
+# cleanup default my.cnf config file;
+run rm -rf /etc/mysql/my.cnf
+COPY my.cnf /etc/mysql/
+
 VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /usr/local/bin/
